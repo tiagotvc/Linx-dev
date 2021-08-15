@@ -1,0 +1,40 @@
+version: "3"
+services:
+  mongo:
+    image: mongo:3.6.19-xenial
+    ports:
+      - "27017:27017"
+    networks:
+      - mern-app
+    volumes:
+      - ./mongo-scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+  redis:
+    image: redis:4.0.7
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
+    networks: 
+      - mern-app
+    command: ["redis-server", "--appendonly", "yes"]
+    hostname: redis
+  api-server:
+    build:
+      context: ./ApiDeCatalogo/back-end
+    ports:
+      - "3001:3001"
+    networks:
+      - mern-app
+    depends_on:
+      - mongo
+      - redis
+    environment: 
+      - REDIS_URL=redis://redis
+networks:
+  mern-app:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
+  redis-data:
+    driver: local
