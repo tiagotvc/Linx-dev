@@ -1,0 +1,24 @@
+{
+  "name": "apidecatalogo",
+  "version": "1.0.0",
+  "description": "API DE CATALOGO DE PRODUTOS DA LINX",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tiagotvc/Linx-dev.git"
+  },
+  "author": "TIAGO MACHADO CARVALHO",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tiagotvc/Linx-dev/issues"
+  },
+  "homepage": "https://github.com/tiagotvc/Linx-dev#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^5.13.7"
+  }
+}
