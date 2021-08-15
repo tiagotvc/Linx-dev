@@ -1,0 +1,19 @@
+{
+  "name": "apiderecomendacoes",
+  "version": "1.0.0",
+  "description": "API DE RECOMENDACOES DE PRODUTOS DA LINX",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tiagotvc/Linx-dev/tree/main/ApiDeCatalogo"
+  },
+  "author": "TIAGO MACHADO CARVALHO",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
+}
