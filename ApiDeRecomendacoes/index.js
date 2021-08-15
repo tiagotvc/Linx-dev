@@ -1,8 +1,8 @@
-const express = require("express")
-const cors = require('cors')
-const recommendationsRouter = require('./routes/recommendations-router')
-const db = require('./db')
-const app = express()
+const express = require("express");
+const cors = require('cors');
+const recommendationsRouter = require('./routes/recommendations-router');
+/* const db = require('./db'); */
+const app = express();
 
 app.use(cors());
 
@@ -18,10 +18,10 @@ app.use(express.urlencoded({
 }));
 
 
-db.on('error', console.error.bind(console, 'MongoDB connection error:'))
+/* db.on('error', console.error.bind(console, 'MongoDB connection error:')); */
 
-app.use('/api', productRouter)
+app.use('/api', recommendationsRouter);
 
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3007;
 module.exports = app.listen(port, () => console.log(`Listening on port ${port}....`));
