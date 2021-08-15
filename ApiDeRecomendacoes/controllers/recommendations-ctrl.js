@@ -40,11 +40,34 @@
           mais requisições por minuto, o retorno da api é bem rapida mesmo sem o cache,
           mas é em torno de  50% mais rápida com ele*/
     
+
+        const mostPopular = [];
+        const priceReduction = [];
+        const type = 'complete';
+
+
+        const fisrtList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json')
+       
+        await Promise.all(fisrtList.data.map((mostPopularId)=>{
+            
+            const product = await axios.get('http://localhost:3001/api/products/'+ mostPopularId.recommendedProduct.id + '/' + type);
+            console.log(product);
+            mostPopular.push(mostPopularId.recommendedProduct.id);
+        }))
+
+        const secondList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/pricereduction.json')
         
-        const datas = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json')
-        console.log(datas);
-    
-        const _id = req.params.id;
+        await Promise.all(secondList.data.map((priceReductionId)=>{
+            priceReduction.push(priceReductionId.recommendedProduct.id);
+        }))
+
+
+
+
+
+
+       
+
     
         const complete = req.params.type === 'complete'? true : false;
     

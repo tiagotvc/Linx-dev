@@ -20,7 +20,7 @@ services:
     hostname: redis
   api-server:
     build:
-      context: ./ApiDeCatalogo/back-end
+      context: ./ApiDeCatalogo
     ports:
       - "3001:3001"
     networks:
