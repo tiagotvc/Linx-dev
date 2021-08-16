@@ -27,20 +27,23 @@
             }
             if (!products.length) {
                 mensagem = {mensagem:"Product not found"};
-    
-                data = products;
                 
             }
+            else{
+
+                data = products;
+               
+            }
             
-            data = products;
-           
-    
         }).catch(err => console.log(err))
+
+        if(data != undefined && data!= '' && data != null){
     
-       
-        await redis.setAsync(prd, JSON.stringify(data));
-        await redis.exAsync(prd, 120);
-        
+            await redis.setAsync(prd, JSON.stringify(data));
+            await redis.exAsync(prd, 1200);
+        }
+    
+
         return data;
     } 
     
@@ -53,23 +56,19 @@
     async function handlerBody(complete, _id , data){
       
         const id = _id;
+
+        let temp_body = {}
     
     
          return new Promise(function (resolve,reject) {
             for(let i = 0;i< data.length;i++){
                 if(complete){
-                    if(data[i]._id == id){
-                        temp_body = {
-                            name: data[i].name,
-                            previousPrice: data[i].previousPrice, 
-                            price: data[i].price,
-                            status: data[i].status,
-                            categories: data[i].categories,
-                            img_path: data[i].img_path
-                        };
+                    if(data[i].id === id){
+                        temp_body = data[i];
+                        i = data.length + 1;
                     }
                 }else{
-                    if(data[i]._id == id){
+                    if(data[i].id === id){
                         temp_body = {
                             name:data[i].name,
                             price:data[i].price,
@@ -94,15 +93,14 @@
        ser 200 ou 404 , no caso do 404 retorna uma mensagem no lugar dos
        campos */
     
-    
     getProductById = async (req, res) => {
     
         /* A variável (cache) sempre inicia como false , para que toda vez que o container
           for iniciado o cache seja totalmente limpo, deixei apenas para garantir que na 
           primeira interação o sistema consulte o banco , após essa primeira interação a
           variavel se torna true até que o container seja parado, a partir desse momento
-          o cache onde é guardado todos os produtos expira a cada 2 minutos, ou seja após
-          a primeira consulta no banco durante dois minutos a api irá consultar o cache 
+          o cache onde é guardado todos os produtos expira a cada 1200 ms, ou seja após
+          a primeira consulta no banco durante 1200 ms a api irá consultar o cache 
           dando a api um ganho consideravel de velocidade , fazendo com que a api suporte
           mais requisições por minuto, o retorno da api é bem rapida mesmo sem o cache,
           mas é em torno de  50% mais rápida com ele*/
@@ -116,13 +114,12 @@
         }
     
         
-    
         const _id = req.params.id;
     
         const complete = req.params.type === 'complete'? true : false;
     
         const rawData = await redis.getAsync(prd);
-    
+
         const data = rawData? JSON.parse(rawData): await getAllProducts();
         
         const product_body = await handlerBody(complete, _id, data);

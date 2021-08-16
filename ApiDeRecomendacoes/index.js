@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require('cors');
 const recommendationsRouter = require('./routes/recommendations-router');
-/* const db = require('./db'); */
 const app = express();
 
 app.use(cors());
@@ -16,9 +15,6 @@ app.use(express.urlencoded({
     limit: "20mb",
     extended: true
 }));
-
-
-/* db.on('error', console.error.bind(console, 'MongoDB connection error:')); */
 
 app.use('/api', recommendationsRouter);
 
