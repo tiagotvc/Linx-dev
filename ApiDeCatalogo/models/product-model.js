@@ -13,7 +13,7 @@
     const Product = new Schema(
         {
             _id: { type: Number, required: true},
-            stringDocument:{ type: String, required: true}
+            name: { type: String, required: true }
         },
         { timestamps: true },
     )
