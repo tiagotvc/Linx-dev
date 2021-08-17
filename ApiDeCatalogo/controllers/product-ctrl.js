@@ -9,6 +9,7 @@
 
 const Product = require('../models/product-model');
 const redis = require('../cache/redis-client');
+const delay = ms => new Promise(res => setTimeout(res, ms));
 let prd = '';
 let cache = false;
 let dbData = require('./catalog.json');
@@ -23,24 +24,24 @@ async function databaseInitialize(){
 
     console.log("This is the first interaction with the API")
 
-    for(let j= 0;j < dbData.length; j++){
+    await dbData.forEach(async function (doc, i) {
 
-        let id = j + 1;
-        let document = JSON.stringify(dbData[j]);
-
-        let itens = { _id:id , stringDocument:document};
+        let id = i + 1;
+        let itens = { _id:id , stringDocument:doc};
 
         const product = new Product(itens);
 
         product
             .save()
             .then(() => {
-                console.log("document inserted " + product._id);
+                //console.log("document inserted " + product._id);
             })
             .catch((error) => {
                 console.log("document not inserted " + error);
             })
-    }
+      });
+
+      await delay(2000);
 }
 
      
@@ -72,8 +73,6 @@ async function getAllProducts(){
             * será consultado, mas dessa vez teremos dados.
             */
 
-            data = dbData;
-
         }
         else{
 
@@ -84,7 +83,6 @@ async function getAllProducts(){
     }).catch(err => console.log(err))
 
     if(data != undefined && data!= '' && data != null){
-    
         await redis.setAsync(prd, JSON.stringify(data));
         await redis.exAsync(prd, 1200);
     }
@@ -100,34 +98,29 @@ async function getAllProducts(){
     
 async function handlerBody(complete, _id , data){
 
-    const id = _id;
-    let temp_body = {};
-    
-    return new Promise(function (resolve,reject) {
-        for(let i = 0;i< data.length;i++){
+   let body = {}
 
-            let temp_data = JSON.parse(data[i].stringDocument);
-
-            if(complete){
-                if(temp_data.id === id){
-                    temp_body = temp_data;
-                    i = data.length + 1;
-                }
-            }else{
-                if(temp_data.id === id){
-                    temp_body = {
-                        name:temp_data.name,
-                        price:temp_data.price,
-                        status:temp_data.status,
-                        categories:temp_data.categories,
-                    };
+    await data.forEach(async function (doc, i) {
+        if(complete){
+            if(doc.stringDocument.id === _id){
+                body = doc.stringDocument;
+            }
+        }else{
+            if(doc.stringDocument.id === _id){
+                body = {
+                    name:doc.stringDocument.name,
+                    price:doc.stringDocument.price,
+                    status:doc.stringDocument.status,
+                    categories:doc.stringDocument.categories
                 }
             }
-                
-        }resolve({
-            temp_body
-        });
-    }); 
+        }
+        
+      });
+ 
+    
+
+    return body;
 }
     
     
@@ -159,23 +152,31 @@ getProductById = async (req, res) => {
         console.log("Clean cache!")
     }
 
-    
-        
+
     const _id = req.params.id;
     
     const complete = req.params.type === 'complete'? true : false;
     
     const rawData = await redis.getAsync(prd);
 
-    const data = rawData? JSON.parse(rawData): await getAllProducts();
+    let data = rawData? JSON.parse(rawData): await getAllProducts();
+
+    if(data == '' || data == undefined || data == null){
+
+        await delay(1000)
+
+        data = await getAllProducts();
         
+        await delay(1000)
+    }
+    
     const product_body = await handlerBody(complete, _id, data);
 
     
-    if(product_body.temp_body.name){
+    if(product_body.name){
        
     
-        return res.status(200).json({sucess:true, product:product_body.temp_body}); 
+        return res.status(200).json({sucess:true, product:product_body}); 
         
     
     }else {

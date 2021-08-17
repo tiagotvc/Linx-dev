@@ -7,52 +7,89 @@
     Por: Tiago Machado Carvalho */
 
     //const redis = require('../cache/redis-client');
-    const axios = require('axios');
-    let prd = '';
-    let cache = false;
+
+const axios = require('axios');
+let prd = '';
+let cache = false;
+const redis = require('../cache/redis-client');
    
+async function cacheInitialize(){
+
+    /**Consulta as duas listas de id */
+
+    const fisrtList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json');
+    const secondList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/pricereduction.json');
+
+    /**Salva as listas no cache */
+
+    await redis.setAsync(fisrt, JSON.stringify(fisrtList.data));
+    await redis.setAsync(second, JSON.stringify(secondList.data));
+
+    /**Seta o tempo que as listas ficarão no cache */
+
+    await redis.exAsync(fisrt, 1200);
+    await redis.exAsync(second, 1200);
+}
 
     
-    getRecommendations = async (req, res) => {
+getRecommendations = async (req, res) => {
       
-    
+    //const {maxItens, type} = query;
 
-        const mostPopular = [];
-        const priceReduction = [];
-        let type = 'complete';
+    const firstList = JSON.parse(await redis.getAsync(first));
+    const secondList = JSON.parse(await redis.getAsync(second));
 
-        const delay = ms => new Promise(res => setTimeout(res, ms));
+    if(firstList === 'undefined' || secondList === 'undefine'){
+        const IdLists = await cacheInitialize();  
+    }
 
-         const fisrtList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json');
-       
-         await Promise.all(fisrtList.data.map(async (mostPopularId) => {
+    const mostPopular = [];
+    const priceReduction = [];
+    let type = 'complete';
+
+    customElements
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    await Promise.all(fisrtList.data.map(async (mostPopularId) => {
              
-            await delay(1000);
-
-            const info = await axios.get('http://localhost:3001/api/products/'+ mostPopularId.recommendedProduct.id + '/' + type)
-            .then((sucesso)=>{
+        const info = await axios.get('http://localhost:3001/api/products/'+ mostPopularId.recommendedProduct.id + '/' + type)
+        .then((sucesso)=>{
                 return sucesso.data
-            })
-            .catch((erro)=>{
+        })
+        .catch((erro)=>{
                  return erro
-            }) 
+        }) 
 
-            mostPopular.append(info)
-
-
+        if(info.sucess){
+            if(info.product.status === 'AVAILABLE'){
+                mostPopular.push(info.product)
+            }
+        }
         }))  
 
-        /* console.log(mostPopular) */
-
-         /* console.log(mostPopular)
-
-        const secondList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/pricereduction.json')
+    
         
-        await Promise.all(secondList.data.map((priceReductionId)=>{
-            priceReduction.push(priceReductionId.recommendedProduct.id);
-        }))   */
+    console.log(secondList.data);
 
-        return res.json(info)
+    await Promise.all(fisrtList.data.map(async (reductionId) => {
+             
+        const sinfo = await axios.get('http://localhost:3001/api/products/'+ reductionId.recommendedProduct.id + '/' + type)
+        .then((sucesso)=>{
+                return sucesso.data
+        })
+        .catch((erro)=>{
+                return erro
+        }) 
+    
+        if(sinfo.sucess){
+            if(sinfo.product.status === 'AVAILABLE'){
+                priceReduction.push(sinfo.product)
+            }
+        }
+    }))  
+
+        return res.json({list_1: mostPopular, list_2:priceReduction})
     }
     
     module.exports = {
