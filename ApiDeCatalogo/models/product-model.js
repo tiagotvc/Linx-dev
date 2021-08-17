@@ -13,12 +13,7 @@
     const Product = new Schema(
         {
             _id: { type: Number, required: true},
-            name: { type: String, required: true },
-            previousPrice: { type: Number, required: true }, 
-            price: { type: Number, required: true },
-            status: { type: String, required: true },
-            categories: { type: String, required: true },
-            img_path: { type: String, required: true }
+            stringDocument:{ type: String, required: true}
         },
         { timestamps: true },
     )
