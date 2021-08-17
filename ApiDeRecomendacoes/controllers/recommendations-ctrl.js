@@ -20,6 +20,8 @@ async function cacheInitialize(){
     const fisrtList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json');
     const secondList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/pricereduction.json');
 
+    let lists = [];
+
     /**Salva as listas no cache */
 
     await redis.setAsync(fisrt, JSON.stringify(fisrtList.data));
@@ -29,6 +31,12 @@ async function cacheInitialize(){
 
     await redis.exAsync(fisrt, 1200);
     await redis.exAsync(second, 1200);
+
+    lists.push({first:fisrtList});
+    lists.push({first:secondList});
+
+    return lists
+
 }
 
     
@@ -38,20 +46,22 @@ getRecommendations = async (req, res) => {
 
     const firstList = JSON.parse(await redis.getAsync(first));
     const secondList = JSON.parse(await redis.getAsync(second));
-
-    if(firstList === 'undefined' || secondList === 'undefine'){
-        const IdLists = await cacheInitialize();  
-    }
-
     const mostPopular = [];
     const priceReduction = [];
+
+    let IdLists;
     let type = 'complete';
 
-    customElements
+    if(firstList === 'undefined' || secondList === 'undefine'){
 
-    const delay = ms => new Promise(res => setTimeout(res, ms));
+        IdLists = await cacheInitialize();  
+    }
 
-    await Promise.all(fisrtList.data.map(async (mostPopularId) => {
+    
+    console.log(IdLists)
+    //const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    /* await Promise.all(fisrtList.data.map(async (mostPopularId) => {
              
         const info = await axios.get('http://localhost:3001/api/products/'+ mostPopularId.recommendedProduct.id + '/' + type)
         .then((sucesso)=>{
@@ -87,9 +97,11 @@ getRecommendations = async (req, res) => {
                 priceReduction.push(sinfo.product)
             }
         }
-    }))  
+    }))   */
 
-        return res.json({list_1: mostPopular, list_2:priceReduction})
+        return res.json({lists});
+
+        //return res.json({list_1: mostPopular, list_2:priceReduction})
     }
     
     module.exports = {
