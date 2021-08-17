@@ -41,7 +41,7 @@ async function databaseInitialize(){
             })
       });
 
-      await delay(2000);
+      await delay(3000);
 }
 
      
@@ -64,6 +64,7 @@ async function getAllProducts(){
             * for montada, depois só rodará novamente caso a imagem seja excluida
             * ou seja feito um rebuild.
             *  */ 
+
 
             await databaseInitialize();
                 
@@ -133,6 +134,9 @@ async function handlerBody(complete, _id , data){
        campos */
     
 getProductById = async (req, res) => {
+
+    const _id = req.params.id;
+    const recommendationsAPI = req.params.type;
     
     /* A variável (cache) sempre inicia como false , para que toda vez que o container
     for iniciado o cache seja totalmente limpo, deixei apenas para garantir que na 
@@ -152,14 +156,45 @@ getProductById = async (req, res) => {
         console.log("Clean cache!")
     }
 
+    /** Bloco de código usado para retornar os dados para a api de recommendacoes
+     * optei por utilizar dessa forma pois o ganho de velocidade foi muito grande
+     * mesmo retornando todos os produtos existentes no banco de dados, ao tentar
+     * fazer buscando cada id em uma interação se tornou uma pratica lenta e sujeita
+     * a erros tanto no banco quanto na api. Para identificar quando é um request
+     * externo ou quando é um request da api criei um terceiro type chamado micro
+     * service. **** Pode ser melhorado mas não hã tempo.
+     */
 
-    const _id = req.params.id;
+    if(recommendationsAPI === 'microservice'){
+
+        const recommendations = await getAllProducts();
+
+        return res.json(recommendations);  
+    }
     
+
+    /** Caso não seja uma requisicao da api de recomendacoes o sistema continua,
+     * aqui é setado se o corpo retornado será completo ou compacto de acordo
+     * com o parâmetro enviado, depois a variavel raData retorno os dados que
+     * estão em cache caso os mesmos existam, e abaixo dela é verificado essa
+     * existencia e caso exista os dados são transformados em JSON, caso não
+     * exista é feito uma busca no banco pelos dados.
+     */
+
     const complete = req.params.type === 'complete'? true : false;
     
     const rawData = await redis.getAsync(prd);
 
     let data = rawData? JSON.parse(rawData): await getAllProducts();
+
+    
+    /**Esse bloco de código só é acessado na primeira vez que a api é
+     * montada no container, serve apenas para aumentar o tempo de espera
+     * para que a função responsável por gravar os documentos no banco
+     * tenha tempo para inserir todos os dados visto que são quase
+     * 5 mil linhas de inserção, após isso esse bloco não é mais acessado
+     * não afetando assim na velocidade da API.
+     */
 
     if(data == '' || data == undefined || data == null){
 
@@ -171,6 +206,8 @@ getProductById = async (req, res) => {
     }
     
     const product_body = await handlerBody(complete, _id, data);
+
+    console.log(product_body)
 
     
     if(product_body.name){
