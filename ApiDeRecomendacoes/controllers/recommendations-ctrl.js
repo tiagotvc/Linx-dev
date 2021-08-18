@@ -17,6 +17,8 @@ let first_List = '';
 let second_List = '';
 let cache_firstList = '';
 let cache_secondList = '';
+let max = '';
+let maxProd = '';
 
 
 let cache = false;
@@ -110,6 +112,13 @@ async function cacheInitialize(maxItens){
     await redis.setAsync(second_List, JSON.stringify(priceReducedList));
     await redis.exAsync(second_List, 1200);
     cache_secondList = JSON.parse(await redis.getAsync(second_List));
+
+
+    /** cache da ultima quantidade de produtos requisitada */
+
+    await redis.setAsync(max, maxItens);
+    await redis.exAsync(max, 1200);
+    maxProd = await redis.getAsync(max);
        
     return "done";
 }
@@ -121,6 +130,28 @@ getRecommendations = async (req, res) => {
 
     const {maxProducts} = req.query;
 
+  
+    /** 
+     * Valida se a quantidade enviada na query é menor que 10, caso seja menor
+     * e setado o número 10
+     */
+
+    if(maxProducts < 10){
+
+        maxProducts = 10;
+
+    }
+
+    /**
+     * Acrescentado validação para quando valor da variavel maxProducts é alterada no front
+     * é alterado valor de cache para false, forçando a rodar novamente a logica de cache.
+     */
+    
+    if(cache == true && maxProducts != maxProd ){
+
+        cache = false;
+    }
+
 
     /**Bloco responsável por limpar o cache caso o sistema seja reiniciado
      * apenas para garantir que nada fique no cache quando o sistema passar 
@@ -129,7 +160,10 @@ getRecommendations = async (req, res) => {
 
 
     if(!cache){
-        
+        await redis.delAsync(first_List);
+        await redis.delAsync(second_List);
+        await redis.delAsync(max);
+
         await cacheInitialize(maxProducts);
     
         //Mantive o console pois ele indica quando o cache é limpo!
