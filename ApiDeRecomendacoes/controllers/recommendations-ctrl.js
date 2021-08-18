@@ -148,7 +148,6 @@ getRecommendations = async (req, res) => {
     
     if(cache == true && (maxProducts > maxProd || maxProducts < maxProd)){
 
-        console.log("awais")
         cache = false;
     }
 
@@ -158,12 +157,6 @@ getRecommendations = async (req, res) => {
      * por um reboot.
      */
 
-    /** 
-     * Tem um bug na variavel cache que não consegui entender, as vezes ela simplesmente
-     * assume valor false, aparentemente printar ela resolve o problema, muito estranho.
-     */
-
-    console.log("cache", cache);
 
     if(cache == false){
         await redis.delAsync(first_List);

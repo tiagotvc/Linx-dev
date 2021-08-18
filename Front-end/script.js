@@ -27,7 +27,7 @@ async function getRecommendedProducts(){
             priceReduced.push(reduced)
         }))
 
-        console.log(mostPopular)
+      
 
 
         document.getElementById('slider').innerHTML = mostPopular.map(populares => 
