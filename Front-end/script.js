@@ -7,7 +7,7 @@ let buttonLeft = document.getElementById('slide-left');
 let OtherButtonRight = document.getElementById('slider-right');
 let OtherButtonLeft = document.getElementById('slider-left');
 let recommendedURL = 'http://localhost:3007/api/recommendations'
-let maxProducts = 22;
+let maxProducts = 30;
 var mostPopular = [];
 var priceReduced = []
 let i = 1;
@@ -27,7 +27,7 @@ async function getRecommendedProducts(){
             priceReduced.push(reduced)
         }))
 
-        console.log(priceReduced)
+        console.log(mostPopular)
 
 
         document.getElementById('slider').innerHTML = mostPopular.map(populares => 
