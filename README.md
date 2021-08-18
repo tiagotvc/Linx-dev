@@ -24,6 +24,7 @@ Processo padrão para iniciar e testar o projeto
    [Docker]
    - Estar na raiz, local onde esta o arquivo docker-compose.yml
    - docker estar rodando
+   - Precisa ser nessa exata sequência:
    - docker-compose up --build mongo
    - docker-compose up --build redis
    - docker-compose up --build api-server
