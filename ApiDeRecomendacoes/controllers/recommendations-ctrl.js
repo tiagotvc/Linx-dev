@@ -1,79 +1,136 @@
- /* -- Arquivo Controller de Produtos --
-
-    Responsável pelas regras de negócio da Api.
-
-    Criado: 2021/08/14
-
-    Por: Tiago Machado Carvalho */
-
-    //const redis = require('../cache/redis-client');
+/**
+ * Arquivo de criação do cliente Redis 
+ * 
+ * Cria a conexão do Redis e altera as funções
+ * para que respondam de forma asyncrona.
+ * 
+ * Data de criação:2021/08/15
+ * 
+ * 
+ * Criador: Tiago Machado Carvalho
+ * 
+ */
 
 const axios = require('axios');
 const redis = require('../cache/redis-client');
-let firsts;
-let first = '';
-let second = '';
-let seconds;
-let allProduct;
-let allProducts = '';
+let first_List = '';
+let second_List = '';
+let cache_firstList = '';
+let cache_secondList = '';
+
+
 let cache = false;
+let type = 'complete';
 
  
-async function cacheInitialize(){
+async function cacheInitialize(maxItens){
 
-     /** Consulta a Api de Catalogo, mas sem ID, para tornar o processo mais veloz
-     * optei por trazer a lista inteira de produtos e guarda-la em cache, dessa
-     * forma é evitado que precise ser feito uma busca por cada id dentro da API,
-     * tentei fazer dessa forma mas é simplesmente inviavel. Para funcionar criei
-     * um novo type chamado microservice e passo o id como 0 (poderia ser qualquer id
-     * pois o campo que será o identificador é  o type) ** Cabe uma melhoria aqui
-     * mas o tempo está curto.
-     */
+    cache = true;
 
-    let type = 'microservice';
-
-    const info = await axios.get('http://localhost:3001/api/products/'+ 0 + '/' + type)
-
-    await redis.setAsync(allProducts, JSON.stringify(info.data));
-    await redis.exAsync(allProducts, 1200);
-    allProduct = await redis.getAsync(allProducts);
-
-
-
-    /**Consulta as duas listas de id */
-    
+    /** Aqui as duas consultas para retornar os Ids de mostPopular.json e pricereduction.json */
     
     const fisrtList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json');
-    await redis.setAsync(first, JSON.stringify(fisrtList.data));
-    await redis.exAsync(first, 1200);
-    firsts = await redis.getAsync(first);
-
-
-
     const secondList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/pricereduction.json');
-    await redis.setAsync(second, JSON.stringify(secondList.data));
-    await redis.exAsync(second, 1200);
-    seconds = await redis.getAsync(second);
-
 
     
+    /** Arrays que irão receber todos os ids retornados nas funções anteriores */
+
+    let firstArray = [];
+    let secondArray = [];
+
+
+    /** Feito Maps para jogar os ids retornados nas requisições para dentro dos arrays criados acima */
+
+    await fisrtList.data.map((list) =>{
+        firstArray.push(list.recommendedProduct.id);
+    });
+
+    await secondList.data.map((list) =>{
+        secondArray.push(list.recommendedProduct.id);
+    });
+
+    /** Utilizado slice para criar dois novos arrays contendo apenas a quantidade de ids solicitados
+     * via query no front para cada listagem.
+     */
+
+    const array = firstArray.slice(0,maxItens);
+    const newArray = secondArray.slice(0,maxItens);
+
+
+    /** < ------------------------------------------------- >  */
+
+
+    /** Consultas feitas na Api de catálogo para trazer os produtos
+       * através dos ids que foram formados acima e depois salva os
+       * produtos dentro do cache para aumentar a velocidade da 
+       * API.
+     */
+
+    let mostPopularList = []
+
+    await Promise.all(array.map(async function (doc, i) {
+
+        try{
+            const info = await axios.get('http://localhost:3001/api/products/'+ doc + '/' + type)
+            if(info.data.sucess){
+                if(info.data.product.body.status === 'AVAILABLE'){
+                    mostPopularList.push(info.data.product.body);
+                }
+            }
+
+        }catch(err){
+            console.log("id " + doc + " not found in catalog");
+
+        }
+    })); 
+
+    await redis.setAsync(first_List, JSON.stringify(mostPopularList));
+    await redis.exAsync(first_List, 1200);
+    cache_firstList = JSON.parse(await redis.getAsync(first_List));
+
+
+    let priceReducedList = []
+
+    await Promise.all(newArray.map(async function (doc, i) {
+
+        try{
+            const info = await axios.get('http://localhost:3001/api/products/'+ doc + '/' + type)
+            if(info.data.sucess){
+                if(info.data.product.body.status === 'AVAILABLE'){
+                    priceReducedList.push(info.data.product.body);
+                }
+            }
+
+        }catch(err){
+            console.log("id " + doc + " not found in catalog");
+
+        }
+    }));
+
+    await redis.setAsync(second_List, JSON.stringify(priceReducedList));
+    await redis.exAsync(second_List, 1200);
+    cache_secondList = JSON.parse(await redis.getAsync(second_List));
+       
     return "done";
 }
 
     
 getRecommendations = async (req, res) => {
 
+    /** Pega a quantidade de itens requisitados pelo front via query */
+
+    const {maxProducts} = req.query;
+
+
     /**Bloco responsável por limpar o cache caso o sistema seja reiniciado
      * apenas para garantir que nada fique no cache quando o sistema passar 
      * por um reboot.
      */
 
+
     if(!cache){
-        redis.delAsync(first);
-        redis.delAsync(second);
-        redis.delAsync(allProducts);
         
-        await cacheInitialize();
+        await cacheInitialize(maxProducts);
     
         //Mantive o console pois ele indica quando o cache é limpo!
         console.log("Clean cache!");
@@ -81,84 +138,10 @@ getRecommendations = async (req, res) => {
     }
 
 
-    console.log(allProduct)
-
-
-
-    /** A const validade retorna o valor salvo em cache de produtos,
-     * abaixo dele é feito uma validação se existem dados nele, caso
-     * sim a variavel products recebe o valor dele em forma de JSON
-     * caso não tenha valor é chamado a função que consulta a API de
-     * catalogo.
-     */
-
-    
-
-
-
-    
-
-      
-    //const {maxItens, type} = query;
-
-   /*  let firstList = JSON.parse(await rediss.getAsync(first));
-    let secondList = JSON.parse(await rediss.getAsync(second)); */
-
-
-    const mostPopular = [];
-    const priceReduction = [];
-
-    let IdLists;
-
-  /*   if(firstList == null ||firstList == undefined || secondList == null || secondList == undefined){
-
-        IdLists = await cacheInitialize(); 
-        firstList = IdLists[0];
-        secondList = IdLists[1];
-    } */
-
-
-    //const validate = await rediss.getAsync(allProducts);
-
-    
-    let products =  await callApi();
-
-    console.log(products)
-
-    const fisrtList = await axios.get('https://wishlist.neemu.com/onsite/impulse-core/ranking/mostpopular.json');
-
-
-    console.log(fisrtList)
-
-
-    /* await Promise.all(firstList.map((list) => {
-
-        
-        products.map((prod)=>{
-            console.log(prod)
-         if(prod.id === list){
-            mostPopular.push(prod)
-         }
-
-        })
-        
-        
-    }))   */
-
-
-    
-
-    /* await Promise.all(secondList.map(async (products) => {
-
-
-
-        
-    }))
-
-     */
-
-
-        return "nada"
+    return res.json({
+        mostPopular:cache_firstList,
+        priceReduced:cache_secondList
+    });
 
         //return res.json({list_1: mostPopular, list_2:priceReduction})
     }

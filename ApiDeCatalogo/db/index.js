@@ -1,22 +1,24 @@
- /* -- Arquivo de Conexão do Mongo --
- 
-    Responsável pela conexão ao Mongo em container.
-    A variável {local} serve apenas para testes sem container.
+/**
+ * Arquivo de conexão do mongo
+ * 
+ * Cria a conexão com o mongo
+ * 
+ * Data de criação:2021/08/15
+ * 
+ * Criador: Tiago Machado Carvalho
+ * 
+ */
 
-    Criado: 2021/08/14
-
-    Por: Tiago Machado Carvalho */
-
-    const mongoose = require('mongoose');
-    const container = 'mongo';
-    const local = '127.0.0.1';
+const mongoose = require('mongoose');
+const container = 'mongo';
+const local = '127.0.0.1';
     
-    mongoose
-        .connect(`mongodb://${container}:27017/local`, { useUnifiedTopology: true , useNewUrlParser: true })
-        .catch(e => {
-            console.error('Connection error', e.message)
-        })
+mongoose
+    .connect(`mongodb://${container}:27017/local`, { useUnifiedTopology: true , useNewUrlParser: true })
+    .catch(e => {
+        console.error('Connection error', e.message)
+    })
     
-    const db = mongoose.connection
+const db = mongoose.connection
     
-    module.exports = db
+module.exports = db

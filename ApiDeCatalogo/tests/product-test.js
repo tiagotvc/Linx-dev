@@ -1,3 +1,17 @@
+/**
+ * Arquivo de testes da API de catalogo
+ * 
+ * Performa testes para saber se os retornos 
+ * estão corretos.
+ * 
+ * Data de criação:2021/08/15
+ * 
+ * Criador: Tiago Machado Carvalho
+ * 
+ */
+
+
+
 let chai = require("chai");
 let chaiHttp = require("chai-http");
 let server = require("../index");
