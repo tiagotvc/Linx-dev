@@ -6,8 +6,6 @@ services:
       - "27017:27017"
     networks:
       - mern-app
-    volumes:
-      - ./mongo-scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
   redis:
     image: redis:4.0.7
     ports:

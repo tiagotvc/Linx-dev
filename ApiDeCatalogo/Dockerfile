@@ -4,8 +4,10 @@ WORKDIR /usr/src/app
 
 COPY ./package.json ./
 COPY ./package-lock.json ./
+COPY ./script.js ./
 
 RUN npm install
+
 
 COPY . .
 

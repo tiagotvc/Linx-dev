@@ -44,9 +44,9 @@ Processo padrão para iniciar e testar o projeto
 
     [Pasta scripts]
 
-    - Estando na pasta Raiz da aplicação rodar o seguinte comando:
-    - cd script
-    - node script.js
+    - Após subir todos os containers
+    - Abrir novo cmd do vscode
+    - docker-compose run api-server npm run mongo
     
     - aguardar a inclusão de todos os documentos e as Apis estarão prontas para testes.
 

@@ -16,12 +16,17 @@
  */
 
 
-const Product = require('../ApiDeCatalogo/models/product-model');
-let dbData = require('./catalog.json');
+const Product = require('./models/product-model');
+let dbData = require('./json/catalog.json');
+const db = require('./db')
+
+db.on('error', console.error.bind(console, 'MongoDB connection error:'))
 
 async function databaseInitialize(){
 
+
     await dbData.forEach(async function (doc, i) {
+       
 
         let id = i + 1;
         let itens = { _id:id , stringDocument:doc};
