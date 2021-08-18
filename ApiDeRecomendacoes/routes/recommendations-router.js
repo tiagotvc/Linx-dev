@@ -7,10 +7,10 @@
 
     Por: Tiago Machado Carvalho */
 
-    const express = require('express');
-    const RecommendationsCtrl = require('../controllers/recommendations-ctrl');
-    const router = express.Router();
+const express = require('express');
+const RecommendationsCtrl = require('../controllers/recommendations-ctrl');
+const router = express.Router();
     
-    router.get('/recommendations', RecommendationsCtrl.getRecommendations);
+router.get('/recommendations', RecommendationsCtrl.getRecommendations);
     
-    module.exports = router
+module.exports = router

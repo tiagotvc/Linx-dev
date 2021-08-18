@@ -28,6 +28,8 @@ let data = '';
 
 
 async function cacheInitialize(){
+
+    cache = true;
     
     await Product.find({}, async (err, products) => {
         if (err) {
@@ -62,8 +64,6 @@ async function cacheInitialize(){
 async function handlerBody(type, id, data){
 
    let body = {}
-
-   console.log(data)
 
    return new Promise(function (resolve,reject) {
         for(let i = 0;i< data.length;i++){
