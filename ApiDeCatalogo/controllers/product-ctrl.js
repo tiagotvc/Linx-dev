@@ -17,10 +17,8 @@
 
 const Product = require('../models/product-model');
 const redis = require('../cache/redis-client');
-const delay = ms => new Promise(res => setTimeout(res, ms));
 let prd = '';
 let cache = false;
-let dbData = require('./catalog.json');
 let data = '';
     
     
@@ -77,10 +75,10 @@ async function handlerBody(type, id, data){
             }else{
                 if(data[i].stringDocument.id === id){
                     body = {
-                        name:data[i].name,
-                        price:data[i].price,
-                        status:data[i].status,
-                        categories:data[i].categories,
+                        name:data[i].stringDocument.name,
+                        price:data[i].stringDocument.price,
+                        status:data[i].stringDocument.status,
+                        categories:data[i].stringDocument.categories,
                     };
                     i = data.length + 1 ;
                 }
@@ -125,7 +123,8 @@ getProductById = async (req, res) => {
     
     const product_body = await handlerBody(type, id, data);
 
-    
+    console.log(product_body)
+
     if(product_body.body.name){
        
     
