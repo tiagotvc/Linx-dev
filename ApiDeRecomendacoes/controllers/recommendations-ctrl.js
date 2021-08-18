@@ -73,7 +73,7 @@ async function cacheInitialize(maxItens){
     await Promise.all(array.map(async function (doc, i) {
 
         try{
-            const info = await axios.get('http://localhost:3001/api/products/'+ doc + '/' + type)
+            const info = await axios.get('http://api-server:3001/api/products/'+ doc + '/' + type)
             if(info.data.sucess){
                 if(info.data.product.body.status === 'AVAILABLE'){
                     mostPopularList.push(info.data.product.body);
@@ -96,7 +96,7 @@ async function cacheInitialize(maxItens){
     await Promise.all(newArray.map(async function (doc, i) {
 
         try{
-            const info = await axios.get('http://localhost:3001/api/products/'+ doc + '/' + type)
+            const info = await axios.get('http://api-server:3001/api/products/'+ doc + '/' + type)
             if(info.data.sucess){
                 if(info.data.product.body.status === 'AVAILABLE'){
                     priceReducedList.push(info.data.product.body);
@@ -146,8 +146,9 @@ getRecommendations = async (req, res) => {
      * é alterado valor de cache para false, forçando a rodar novamente a logica de cache.
      */
     
-    if(cache == true && maxProducts != maxProd ){
+    if(cache == true && (maxProducts > maxProd || maxProducts < maxProd)){
 
+        console.log("awais")
         cache = false;
     }
 
@@ -157,8 +158,14 @@ getRecommendations = async (req, res) => {
      * por um reboot.
      */
 
+    /** 
+     * Tem um bug na variavel cache que não consegui entender, as vezes ela simplesmente
+     * assume valor false, aparentemente printar ela resolve o problema, muito estranho.
+     */
 
-    if(!cache){
+    console.log("cache", cache);
+
+    if(cache == false){
         await redis.delAsync(first_List);
         await redis.delAsync(second_List);
         await redis.delAsync(max);

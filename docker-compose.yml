@@ -28,6 +28,18 @@ services:
       - redis
     environment: 
       - REDIS_URL=redis://redis
+  api:
+    build:
+      context: ./ApiDeRecomendacoes
+    ports:
+      - "3007:3007"
+    networks:
+      - mern-app
+    depends_on:
+      - mongo
+      - redis
+    environment: 
+      - REDIS_URL=redis://redis
 networks:
   mern-app:
     driver: bridge

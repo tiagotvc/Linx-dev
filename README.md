@@ -27,13 +27,8 @@ Processo padrão para iniciar e testar o projeto
    - docker-compose up --build mongo
    - docker-compose up --build redis
    - docker-compose up --build api-server
+   - docker-compose up --build api
    - caso de algum erro em um dos container execute novamente o comando.
-
-   [API DE RECOMENDACOES]
-
-   - Esta não está em container, para rodar:
-   - cd ApiDeRecomendacoes
-   - nodemon
 
 ```
 
@@ -151,8 +146,7 @@ Processo padrão para iniciar e testar o projeto
 
         - Criado lógica de cache utilizando o Redis para aumento de performance da API.
 
-        - Não implementei o docker e os testes unitários por falta de tempo, mas não seria
-        problema como podem ver na API de catalogo.
+        - Rodando em container Docker
 
         - Também criaria documentação swagger caso houvesse mais tempo.
 ```

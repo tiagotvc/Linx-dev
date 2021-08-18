@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "API DE CATALOGO DE PRODUTOS DA LINX",
   "main": "index.js",
-  
   "scripts": {
     "test": "mocha --timeout 10000 tests/product-test.js",
     "mongo": "node script.js scripts/script.js"
