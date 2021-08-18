@@ -1,14 +1,16 @@
 let thumbnails = document.getElementsByClassName('thumbnail');
 let slider = document.getElementById('slider');
+let sliders = document.getElementById('sliders');
 
 let buttonRight = document.getElementById('slide-right');
 let buttonLeft = document.getElementById('slide-left');
+let OtherButtonRight = document.getElementById('slider-right');
+let OtherButtonLeft = document.getElementById('slider-left');
 let recommendedURL = 'http://localhost:3007/api/recommendations'
 let maxProducts = 22;
-let mostPopular ;
-let priceReduced ;
-
-
+var mostPopular = [];
+var priceReduced = []
+let i = 1;
 
 
 async function getRecommendedProducts(){
@@ -17,10 +19,49 @@ async function getRecommendedProducts(){
 
         const data = await response.json();
 
-        mostPopular = data.mostPopular;
-        priceReduced = data.priceReduced;
+        Promise.all(data.mostPopular.map((popular)=>{
+            mostPopular.push(popular)
+        }))
 
-        console.log(mostPopular);
+        Promise.all(data.priceReduced.map((reduced)=>{
+            priceReduced.push(reduced)
+        }))
+
+        console.log(priceReduced)
+
+
+        document.getElementById('slider').innerHTML = mostPopular.map(populares => 
+            `
+                <div class="thumbnail">
+                    <div class="number">${i++}°</div>
+                    <img src=${populares.images.default} alt=""></img>
+                    <div class="product-details">
+                        <h2>${populares.name}</h2>
+                        <h3>${populares.oldPrice}</h3>
+                        <h4>Por:<span class="price"> R$ ${populares.price}</span></h4>
+                        <p> <span>${populares.installment.count}x </span> R$ ${populares.installment.price}</p>
+                    </div>
+                </div>
+            
+            `
+        ).join('')
+
+        document.getElementById('sliders').innerHTML = priceReduced.map(populares => 
+            
+            `
+                <div class="thumbnail">
+                    <div class="number">- ${((populares.oldPrice - populares.price)*100/(populares.oldPrice)).toFixed()}%</div>
+                    <img src=${populares.images.default} alt=""></img>
+                    <div class="product-details">
+                        <h2>${populares.name}</h2>
+                        <h3>${populares.oldPrice}</h3>
+                        <h4>Por:<span class="price"> R$ ${populares.price}</span></h4>
+                        <p> <span>${populares.installment.count}x </span> R$ ${populares.installment.price}</p>
+                    </div>
+                </div>
+            
+            `
+        ).join('')
 
     } catch (error){
         console.log(error)
@@ -28,8 +69,6 @@ async function getRecommendedProducts(){
 }
 
 getRecommendedProducts();
-
-
 
 
 
@@ -41,46 +80,19 @@ buttonRight.addEventListener('click', function(){
     slider.scrollLeft += 125;
 })
 
+OtherButtonLeft.addEventListener('click', function(){
+    sliders.scrollLeft -= 125;
+})
+
+OtherButtonRight.addEventListener('click', function(){
+    sliders.scrollLeft += 125;
+})
+
 const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
-// alert(maxScrollLeft);
-// alert("Left Scroll:" + slider.scrollLeft);
 
-//AUTO PLAY THE SLIDER 
-function autoPlay() {
-    if (slider.scrollLeft > (maxScrollLeft - 1)) {
-        slider.scrollLeft -= maxScrollLeft;
-    } else {
-        slider.scrollLeft += 1;
-    }
-}
-let play = setInterval(autoPlay, 50);
-
-// PAUSE THE SLIDE ON HOVER
-for (var i=0; i < thumbnails.length; i++){
-
-thumbnails[i].addEventListener('mouseover', function() {
-    clearInterval(play);
-});
-
-thumbnails[i].addEventListener('mouseout', function() {
-    return play = setInterval(autoPlay, 50);
-});
-}
 
 var Usrdata = document.querySelector('.box');
 
 
 
-document.getElementById('slider').innerHTML = mostPopular.map(popular => 
-    `
-        <div class="thumbnail">
-            <img src=${popular.url} alt=""></img>
-            <div class="product-details">
-                <h2>${user.name}</h2>
-                <div>Country: ${user.country}</div>
-                <p> <span>${user.age}</span> ${user.place}</p>
-            </div>
-        </div>
-    
-    `
-).join('')
+
