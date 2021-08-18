@@ -62,7 +62,7 @@ Processo padrão para iniciar e testar o projeto
     - cd Front-end
     - npx lite-server
 
-    - Aceite tudo e as vitrines já estarã carregadas.
+    - Aceite tudo e as vitrines já estarão carregadas.
     - Para acessar digitar http://localhost:3000 no browser
     - OBS: Caso possua outra aplicação rodando na porta 3000 a aplicação subirá na próxima porta disponivel.
     - O front está parametrizado para  buscar 22 produtos e está retornando 18 produtos disponiveis.
