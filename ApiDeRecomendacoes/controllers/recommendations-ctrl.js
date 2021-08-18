@@ -128,15 +128,14 @@ getRecommendations = async (req, res) => {
 
     /** Pega a quantidade de itens requisitados pelo front via query */
 
-    const {maxProducts} = req.query;
+    let {maxProducts} = req.query;
 
-  
     /** 
-     * Valida se a quantidade enviada na query é menor que 10, caso seja menor
-     * e setado o número 10
+     * Valida se a quantidade enviada na query é menor que 10, nula, indefinida ou vazia  caso seja
+     * um desses valores é setado o número 10.
      */
 
-    if(maxProducts < 10){
+    if(maxProducts < 10 || maxProducts == undefined  || maxProducts == null || maxProducts == ''){
 
         maxProducts = 10;
 

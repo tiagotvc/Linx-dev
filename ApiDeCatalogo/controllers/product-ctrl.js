@@ -123,7 +123,6 @@ getProductById = async (req, res) => {
     
     const product_body = await handlerBody(type, id, data);
 
-    console.log(product_body)
 
     if(product_body.body.name){
        
